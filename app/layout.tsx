@@ -11,7 +11,7 @@ import { BottomPlayer } from "@/components/bottom-player"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Nilkumar Patel - Code Rhapsody",
+  title: "Nil Patel ",
   description: "Software Engineer portfolio showcasing projects, skills, and experience",
     generator: 'v0.dev'
 }
@@ -23,6 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <div className="flex flex-col h-screen bg-black text-white overflow-hidden">
