@@ -8,6 +8,7 @@ import { Sidebar } from "@/components/sidebar"
 import { RightSidebar } from "@/components/right-sidebar"
 import { BottomPlayer } from "@/components/bottom-player"
 
+
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
@@ -34,6 +35,7 @@ export default function RootLayout({
               <RightSidebar />
             </div>
             <BottomPlayer />
+            
           </div>
         </ThemeProvider>
       </body>

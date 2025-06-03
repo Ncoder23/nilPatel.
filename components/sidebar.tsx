@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Compass, Library, Plus, Heart, TrendingUp, User, Briefcase, GraduationCap, FileText } from "lucide-react"
+import { Home, Compass, Library, Plus, Heart, TrendingUp, User, Briefcase, GraduationCap, FileText, Music } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function Sidebar() {
@@ -15,6 +15,7 @@ export function Sidebar() {
     { name: "Skills", href: "/skills", icon: Heart },
     { name: "Education", href: "/education", icon: GraduationCap },
     { name: "Resume", href: "/resume", icon: FileText },
+    // { name: "Songs", href: "/songs", icon: Music },
   ]
 
   return (

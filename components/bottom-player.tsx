@@ -1,15 +1,16 @@
 "use client"
-
 import { useEffect, useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 import { SkipBack, Play, SkipForward, Shuffle, Repeat, Volume2, Cast, List, Maximize2, Pause } from "lucide-react"
-import { supabase } from "@/lib/supabase"
+import { createClient } from "@/lib/supabase"
 import type { Song } from "@/lib/supabase"
+
 
 const SONGS_PER_PAGE = 10
 
-export function BottomPlayer() {
+export  function BottomPlayer() {
+  const supabase = createClient();
   const [songs, setSongs] = useState<Song[]>([])
   const [currentSong, setCurrentSong] = useState<Song | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -35,37 +36,29 @@ export function BottomPlayer() {
     
     try {
       // First, let's verify the connection
-      const { data: testData, error: testError } = await supabase
-        .from('songs')
-        .select('count')
-      
-      console.log("Test query result:", testData, testError)
 
-      // Now fetch the actual songs
-      const { data, error } = await supabase
-        .from('songs')
-        .select('*')
+      const { data: songs, error: testError } = await supabase.from('songs').select('*')
       
-      console.log("Songs query result:", data, error)
+      console.log("Songs query result:", songs, testError)
 
-      if (error) {
-        console.error("Supabase error:", error)
-        setError(error.message)
-        throw error
+      if (testError) {
+        console.error("Supabase error:", testError.message)
+        setError(testError.message)
+        throw testError
       }
 
-      if (!data || data.length === 0) {
+      if (!songs || songs.length === 0) {
         console.log("No songs found in the database")
         setError("No songs found in the database")
         return
       }
       
-      setSongs(data)
-      setHasMore(data.length === SONGS_PER_PAGE)
+      setSongs(songs)
+      setHasMore(songs.length === SONGS_PER_PAGE)
       
-      if (data && data.length > 0) {
-        console.log("Setting current song:", data[0])
-        setCurrentSong(data[0])
+      if (songs && songs.length > 0) {
+        console.log("Setting current song:", songs[0])
+        setCurrentSong(songs[0])
       }
     } catch (error) {
       console.error("Error in fetchInitialSongs:", error)
@@ -79,6 +72,8 @@ export function BottomPlayer() {
     if (!hasMore) return
 
     try {
+      const supabase = createClient();
+      
       const { data, error } = await supabase
         .from('songs')
         .select('*')
@@ -192,6 +187,12 @@ export function BottomPlayer() {
 
   return (
     <div className="bg-black border-t border-gray-800 p-4">
+      
+      {isLoading && (
+        <div className="text-gray-500 text-sm mb-2">
+          Loading...
+        </div>
+      )}
       {error && (
         <div className="text-red-500 text-sm mb-2">
           Error: {error}
