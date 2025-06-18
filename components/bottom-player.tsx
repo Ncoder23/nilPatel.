@@ -124,7 +124,7 @@ export  function BottomPlayer() {
       
       if (welcomeSong) {
         setCurrentSong(welcomeSong);
-        setIsPlaying(true);
+        //setIsPlaying(true);
         return;
       }
 
@@ -139,7 +139,7 @@ export  function BottomPlayer() {
         console.log("No welcome song found, playing first available song");
         if (songs.length > 0) {
           setCurrentSong(songs[0]);
-          setIsPlaying(true);
+          //setIsPlaying(true);
         }
         return;
       }
@@ -151,12 +151,12 @@ export  function BottomPlayer() {
           setSongs(prev => [data, ...prev]);
         }
         setCurrentSong(data);
-        setIsPlaying(true);
+        //setIsPlaying(true);
       } else {
         // If no welcome song found in database, play first available song
         if (songs.length > 0) {
           setCurrentSong(songs[0]);
-          setIsPlaying(true);
+          //setIsPlaying(true);
         }
       }
     } catch (error) {
@@ -164,7 +164,7 @@ export  function BottomPlayer() {
       // Fallback to first song
       if (songs.length > 0) {
         setCurrentSong(songs[0]);
-        setIsPlaying(true);
+        //setIsPlaying(true);
       }
     }
   }
@@ -262,7 +262,7 @@ export  function BottomPlayer() {
           setSongs(prev => [data, ...prev])
         }
         setCurrentSong(data)
-        setIsPlaying(true)
+        //setIsPlaying(true)
       }
     } catch (error) {
       console.error('Error fetching specific song:', error)
@@ -340,7 +340,7 @@ export  function BottomPlayer() {
       
       if (existingSong) {
         setCurrentSong(existingSong);
-        setIsPlaying(true);
+        //setIsPlaying(true);
         return;
       }
 
@@ -363,7 +363,7 @@ export  function BottomPlayer() {
           setSongs(prev => [data, ...prev]);
         }
         setCurrentSong(data);
-        setIsPlaying(true);
+        //  setIsPlaying(true);
       }
     } catch (error) {
       console.error('Error playing specific song:', error);
@@ -428,13 +428,11 @@ export  function BottomPlayer() {
             </Button>
             <Button
               size="sm"
-              className="w-8 h-8 rounded-full bg-white text-black hover:bg-gray-200 p-0"
+              className="w-8 h-8 rounded-full bg-white text-black hover:bg-gray-200 p-0 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={togglePlay}
               disabled={isLoading}
             >
-              {isLoading ? (
-                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-              ) : isPlaying ? (
+              {isPlaying ? (
                 <Pause className="w-4 h-4" />
               ) : (
                 <Play className="w-4 h-4" />
