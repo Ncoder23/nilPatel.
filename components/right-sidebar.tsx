@@ -87,32 +87,8 @@ export function RightSidebar() {
   ]
 
   return (
-    <div className="w-80 bg-black border-l border-gray-800 flex flex-col">
-      <div className="p-4 border-b border-gray-800">
-        {/* <div className="flex items-center justify-between mb-4">
-          <div className="flex space-x-4">
-            <button className="text-white font-medium border-b-2 border-white pb-2">UP NEXT</button>
-            <button className="text-gray-400 pb-2">SKILLS</button>
-            <button className="text-gray-400 pb-2">RELATED</button>
-          </div>
-          <Button variant="outline" size="sm" className="border-gray-600">
-            Save
-          </Button>
-        </div> */}
-{/* 
-        <div className="text-sm text-gray-400 mb-2">Playing from</div>
-        <div className="font-medium">Portfolio Highlights</div> */}
+    <div className="hidden lg:flex w-80 bg-black border-l border-gray-800 flex-col">
 
-        {/* <div className="flex items-center justify-between mt-4">
-          <div className="text-sm">
-            <div className="font-medium">Autoplay</div>
-            <div className="text-gray-400">Add similar content to the end of the queue</div>
-          </div>
-          <div className="w-10 h-6 bg-blue-600 rounded-full flex items-center justify-end pr-1">
-            <div className="w-4 h-4 bg-white rounded-full"></div>
-          </div>
-        </div> */}
-      </div>
 
       <div className="flex-1 overflow-auto">
         {upNext.map((item, index) => (

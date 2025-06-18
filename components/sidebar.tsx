@@ -19,7 +19,7 @@ export function Sidebar() {
   ]
 
   return (
-    <div className="w-64 bg-black border-r border-gray-800 flex flex-col">
+    <div className="hidden md:flex relative bg-black border-r border-gray-800 flex-col transition-all duration-300 ease-in-out w-64">
       
 
       <div className="px-4 py-2 space-y-1">
