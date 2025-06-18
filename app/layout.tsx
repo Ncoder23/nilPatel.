@@ -7,6 +7,7 @@ import { Header } from "@/components/header"
 import { Sidebar } from "@/components/sidebar"
 import { RightSidebar } from "@/components/right-sidebar"
 import { BottomPlayer } from "@/components/bottom-player"
+import { PlayerProvider } from "@/components/player-context"
 
 
 const inter = Inter({ subsets: ["latin"] })
@@ -27,16 +28,18 @@ export default function RootLayout({
 
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          <div className="flex flex-col h-screen bg-black text-white overflow-hidden">
-            <Header />
-            <div className="flex flex-1 overflow-hidden">
-              <Sidebar />
-              <main className="flex-1 overflow-auto bg-black">{children}</main>
-              <RightSidebar />
+          <PlayerProvider>
+            <div className="flex flex-col h-screen bg-black text-white overflow-hidden">
+              <Header />
+              <div className="flex flex-1 overflow-hidden">
+                <Sidebar />
+                <main className="flex-1 overflow-auto bg-black">{children}</main>
+                <RightSidebar />
+              </div>
+              <BottomPlayer />
+              
             </div>
-            <BottomPlayer />
-            
-          </div>
+          </PlayerProvider>
         </ThemeProvider>
       </body>
     </html>

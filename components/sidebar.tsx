@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Compass, Library, Plus, Heart, TrendingUp, User, Briefcase, GraduationCap, FileText, Music } from "lucide-react"
+import { Home, Compass, Library, Plus, Heart, TrendingUp, User, Briefcase, GraduationCap, FileText, Music, Mail, Github, Linkedin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function Sidebar() {
@@ -41,11 +41,26 @@ export function Sidebar() {
       </div>
 
       <div className="px-4 py-2 space-y-1 text-sm text-gray-500">
-        <div className="px-3 py-1">Recent Activity</div>
-        <div className="ml-3 space-y-1">
-          <div>🎵 AI Job Recommendation</div>
-          <div>🎵 nDrive System</div>
-          <div>🎵 Trading Platform</div>
+        <div className="px-3 py-1">Connect with Me</div>
+        <div className="space-y-1">
+          <Link href="mailto:nkp.gpt@gmail.com" className="w-full">
+            <Button variant="ghost" className="w-full justify-start">
+              <Mail className="w-4 h-4 mr-2" />
+              nkp.gpt@gmail.com
+            </Button>
+          </Link>
+          <Link href="https://github.com/Ncoder23" className="w-full">
+            <Button variant="ghost" className="w-full justify-start">
+              <Github className="w-4 h-4 mr-2" />
+              github.com/Ncoder23
+            </Button>
+          </Link>
+          <Link href="https://www.linkedin.com/in/patel-nilkumar/" className="w-full">
+            <Button variant="ghost" className="w-full justify-start">
+              <Linkedin className="w-4 h-4 mr-2" />
+              <span className="text-xs/4">linkedin.com/in/patel-nilkumar</span>
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

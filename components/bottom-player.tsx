@@ -5,12 +5,15 @@ import { Slider } from "@/components/ui/slider"
 import { SkipBack, Play, SkipForward, Shuffle, Repeat, Volume2, Cast, List, Maximize2, Pause } from "lucide-react"
 import { createClient } from "@/lib/supabase"
 import type { Song } from "@/lib/supabase"
-
+import { usePathname } from "next/navigation"
+import { usePlayer } from "./player-context"
 
 const SONGS_PER_PAGE = 10
 
 export  function BottomPlayer() {
   const supabase = createClient();
+  const pathname = usePathname();
+  const { setPlayerRef } = usePlayer();
   const [songs, setSongs] = useState<Song[]>([])
   const [currentSong, setCurrentSong] = useState<Song | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -22,12 +25,149 @@ export  function BottomPlayer() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const hasPlayedWelcome = useRef(false)
 
   useEffect(() => {
     console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL)
     console.log("Supabase Key exists:", !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
     fetchInitialSongs()
   }, [])
+
+  // Clear session data when user leaves the website
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      localStorage.removeItem('hasPlayedWelcome')
+      localStorage.removeItem('welcomeTrackTimestamp')
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        // User is leaving the page (tab switch, minimize, etc.)
+        localStorage.removeItem('hasPlayedWelcome')
+        localStorage.removeItem('welcomeTrackTimestamp')
+      }
+    }
+
+    // Listen for page unload/close
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    
+    // Listen for tab visibility changes
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    // Cleanup event listeners
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [])
+
+  // Expose player functions through context
+  useEffect(() => {
+    setPlayerRef({
+      playSpecificSong,
+      playWelcomeTrack,
+      resetWelcomeTrack,
+      clearSessionData,
+      setPlayerRef: () => {} // This is just to satisfy the interface
+    })
+  }, [songs, setPlayerRef])
+
+  // Check if welcome track should play (with time-based reset)
+  const shouldPlayWelcomeTrack = () => {
+    const hasPlayed = localStorage.getItem('hasPlayedWelcome')
+    const timestamp = localStorage.getItem('welcomeTrackTimestamp')
+    
+    if (!hasPlayed) return true
+    
+    // If timestamp exists, check if more than 30 minutes have passed
+    if (timestamp) {
+      const lastPlayed = parseInt(timestamp)
+      const now = Date.now()
+      const thirtyMinutes = 30 * 60 * 1000 // 30 minutes in milliseconds
+      
+      if (now - lastPlayed > thirtyMinutes) {
+        // More than 30 minutes have passed, allow welcome track to play again
+        localStorage.removeItem('hasPlayedWelcome')
+        localStorage.removeItem('welcomeTrackTimestamp')
+        return true
+      }
+    }
+    
+    return false
+  }
+
+  // Mark welcome track as played with timestamp
+  const markWelcomeTrackAsPlayed = () => {
+    localStorage.setItem('hasPlayedWelcome', 'true')
+    localStorage.setItem('welcomeTrackTimestamp', Date.now().toString())
+  }
+
+  // Check if we should play welcome track on home page
+  useEffect(() => {
+    if (pathname === "/" && songs.length > 0 && !hasPlayedWelcome.current) {
+      // Check if we should play welcome track
+      if (shouldPlayWelcomeTrack()) {
+        hasPlayedWelcome.current = true;
+        markWelcomeTrackAsPlayed();
+        // Play welcome track immediately since songs are loaded
+        playWelcomeTrack();
+      }
+    }
+  }, [pathname, songs]);
+
+  const playWelcomeTrack = async () => {
+    try {
+      // First try to find a song with "Welcome" in the title
+      const welcomeSong = songs.find(song => 
+        song.title.toLowerCase().includes('welcome')
+      );
+      
+      if (welcomeSong) {
+        setCurrentSong(welcomeSong);
+        setIsPlaying(true);
+        return;
+      }
+
+      // If no welcome song found, try to fetch it specifically
+      const { data, error } = await supabase
+        .from('songs')
+        .select('*')
+        .ilike('title', '%welcome%')
+        .single();
+
+      if (error) {
+        console.log("No welcome song found, playing first available song");
+        if (songs.length > 0) {
+          setCurrentSong(songs[0]);
+          setIsPlaying(true);
+        }
+        return;
+      }
+
+      if (data) {
+        // Add to songs array if not already there
+        const existingSong = songs.find(s => s.id === data.id);
+        if (!existingSong) {
+          setSongs(prev => [data, ...prev]);
+        }
+        setCurrentSong(data);
+        setIsPlaying(true);
+      } else {
+        // If no welcome song found in database, play first available song
+        if (songs.length > 0) {
+          setCurrentSong(songs[0]);
+          setIsPlaying(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error playing welcome track:', error);
+      // Fallback to first song
+      if (songs.length > 0) {
+        setCurrentSong(songs[0]);
+        setIsPlaying(true);
+      }
+    }
+  }
 
   const fetchInitialSongs = async () => {
     console.log("Fetching initial songs...")
@@ -56,9 +196,15 @@ export  function BottomPlayer() {
       setSongs(songs)
       setHasMore(songs.length === SONGS_PER_PAGE)
       
-      if (songs && songs.length > 0) {
-        console.log("Setting current song:", songs[0])
-        setCurrentSong(songs[0])
+      // Don't automatically set the first song - let the welcome track logic handle it
+      // Only set a current song if we're not on the home page or if welcome track has already been played
+      const isOnHomePage = pathname === "/"
+      
+      if (!isOnHomePage || !shouldPlayWelcomeTrack()) {
+        if (songs && songs.length > 0) {
+          console.log("Setting current song:", songs[0])
+          setCurrentSong(songs[0])
+        }
       }
     } catch (error) {
       console.error("Error in fetchInitialSongs:", error)
@@ -183,6 +329,57 @@ export  function BottomPlayer() {
     const minutes = Math.floor(time / 60)
     const seconds = Math.floor(time % 60)
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
+  }
+
+  const playSpecificSong = async (songTitle: string) => {
+    try {
+      // First check if the song is already in our loaded songs
+      const existingSong = songs.find(song => 
+        song.title.toLowerCase().includes(songTitle.toLowerCase())
+      );
+      
+      if (existingSong) {
+        setCurrentSong(existingSong);
+        setIsPlaying(true);
+        return;
+      }
+
+      // If not found, fetch it from the database
+      const { data, error } = await supabase
+        .from('songs')
+        .select('*')
+        .ilike('title', `%${songTitle}%`)
+        .single();
+
+      if (error) {
+        console.error('Song not found:', songTitle);
+        return;
+      }
+
+      if (data) {
+        // Add to songs array if not already there
+        const existingSongInArray = songs.find(s => s.id === data.id);
+        if (!existingSongInArray) {
+          setSongs(prev => [data, ...prev]);
+        }
+        setCurrentSong(data);
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.error('Error playing specific song:', error);
+    }
+  }
+
+  const resetWelcomeTrack = () => {
+    localStorage.removeItem('hasPlayedWelcome')
+    localStorage.removeItem('welcomeTrackTimestamp')
+    hasPlayedWelcome.current = false
+  }
+
+  const clearSessionData = () => {
+    localStorage.removeItem('hasPlayedWelcome')
+    localStorage.removeItem('welcomeTrackTimestamp')
+    hasPlayedWelcome.current = false
   }
 
   return (
